@@ -103,10 +103,17 @@
 #define CODEC_RELEASE_VER       "05.00"
 #define CODEC_VENDOR            "ITTIAM"
 #define MAXVERSION_STRLEN       511
+#ifdef __ANDROID__
+#define VERSION(version_string, codec_name, codec_release_type, codec_release_ver, codec_vendor)    \
+    snprintf(version_string, MAXVERSION_STRLEN,                                                     \
+             "@(#)Id:%s_%s Ver:%s Released by %s",                                                  \
+             codec_name, codec_release_type, codec_release_ver, codec_vendor)
+#else
 #define VERSION(version_string, codec_name, codec_release_type, codec_release_ver, codec_vendor)    \
     snprintf(version_string, MAXVERSION_STRLEN,                                                     \
              "@(#)Id:%s_%s Ver:%s Released by %s Build: %s @ %s",                                   \
              codec_name, codec_release_type, codec_release_ver, codec_vendor, __DATE__, __TIME__)
+#endif
 
 
 #define MIN_IN_BUFS             1
@@ -1955,6 +1962,11 @@ WORD32 ih264d_video_decode(iv_obj_t *dec_hdl, void *pv_api_ip, void *pv_api_op)
         {
             memcpy(pu1_bitstrm_buf, pu1_buf + u4_length_of_start_code,
                    buflen);
+            /* Decoder may read extra 8 bytes near end of the frame */
+            if((buflen + 8) < buf_size)
+            {
+                memset(pu1_bitstrm_buf + buflen, 0, 8);
+            }
             u4_first_start_code_found = 1;
 
         }
