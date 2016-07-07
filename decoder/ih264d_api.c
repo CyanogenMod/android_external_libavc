@@ -889,6 +889,43 @@ void ih264d_init_decoder(void * ps_dec_params)
     dec_struct_t * ps_dec = (dec_struct_t *)ps_dec_params;
     dec_slice_params_t *ps_cur_slice;
     pocstruct_t *ps_prev_poc, *ps_cur_poc;
+    WORD32 size;
+
+    size = sizeof(pred_info_t) * 2 * 32;
+    memset(ps_dec->ps_pred, 0 , size);
+
+    size = sizeof(disp_mgr_t);
+    memset(ps_dec->pv_disp_buf_mgr, 0 , size);
+
+    size = sizeof(buf_mgr_t) + ithread_get_mutex_lock_size();
+    memset(ps_dec->pv_pic_buf_mgr, 0, size);
+
+    size = sizeof(dec_err_status_t);
+    memset(ps_dec->ps_dec_err_status, 0, size);
+
+    size = sizeof(sei);
+    memset(ps_dec->ps_sei, 0, size);
+
+    size = sizeof(dpb_commands_t);
+    memset(ps_dec->ps_dpb_cmds, 0, size);
+
+    size = sizeof(dec_bit_stream_t);
+    memset(ps_dec->ps_bitstrm, 0, size);
+
+    size = sizeof(dec_slice_params_t);
+    memset(ps_dec->ps_cur_slice, 0, size);
+
+    size = MAX(sizeof(dec_seq_params_t), sizeof(dec_pic_params_t));
+    memset(ps_dec->pv_scratch_sps_pps, 0, size);
+
+    size = sizeof(ctxt_inc_mb_info_t);
+    memset(ps_dec->ps_left_mb_ctxt_info, 0, size);
+
+    size = (sizeof(neighbouradd_t) << 2);
+    memset(ps_dec->ps_left_mvpred_addr, 0 ,size);
+
+    size = sizeof(buf_mgr_t) + ithread_get_mutex_lock_size();
+    memset(ps_dec->pv_mv_buf_mgr, 0, size);
 
     /* Free any dynamic buffers that are allocated */
     ih264d_free_dynamic_bufs(ps_dec);
@@ -1066,6 +1103,7 @@ void ih264d_init_decoder(void * ps_dec_params)
            (MAX_DISP_BUFS_NEW) * sizeof(UWORD32));
     memset(ps_dec->u4_disp_buf_to_be_freed, 0,
            (MAX_DISP_BUFS_NEW) * sizeof(UWORD32));
+    memset(ps_dec->ps_cur_slice, 0, sizeof(dec_slice_params_t));
 
     ih264d_init_arch(ps_dec);
     ih264d_init_function_ptr(ps_dec);
@@ -1600,6 +1638,14 @@ WORD32 ih264d_video_decode(iv_obj_t *dec_hdl, void *pv_api_ip, void *pv_api_op)
 
     ps_dec_ip = (ivd_video_decode_ip_t *)pv_api_ip;
     ps_dec_op = (ivd_video_decode_op_t *)pv_api_op;
+
+    {
+        UWORD32 u4_size;
+        u4_size = ps_dec_op->u4_size;
+        memset(ps_dec_op, 0, sizeof(ivd_video_decode_op_t));
+        ps_dec_op->u4_size = u4_size;
+    }
+
     ps_dec->pv_dec_out = ps_dec_op;
     if(ps_dec->init_done != 1)
     {
