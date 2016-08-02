@@ -374,6 +374,7 @@ WORD32 ih264d_start_of_pic(dec_struct_t *ps_dec,
     ps_dec->ps_parse_cur_slice = &(ps_dec->ps_dec_slice_buf[0]);
     ps_dec->ps_decode_cur_slice = &(ps_dec->ps_dec_slice_buf[0]);
     ps_dec->ps_computebs_cur_slice = &(ps_dec->ps_dec_slice_buf[0]);
+    ps_dec->u2_cur_slice_num = 0;
 
     /* Initialize all the HP toolsets to zero */
     ps_dec->s_high_profile.u1_scaling_present = 0;
@@ -573,7 +574,6 @@ WORD32 ih264d_start_of_pic(dec_struct_t *ps_dec,
     ps_dec->u2_mv_2mb[1] = 0;
     ps_dec->u1_last_pic_not_decoded = 0;
 
-    ps_dec->u2_cur_slice_num = 0;
     ps_dec->u2_cur_slice_num_dec_thread = 0;
     ps_dec->u2_cur_slice_num_bs = 0;
     ps_dec->u4_intra_pred_line_ofst = 0;
@@ -940,7 +940,6 @@ WORD32 ih264d_end_of_pic(dec_struct_t *ps_dec,
     dec_slice_params_t *ps_cur_slice = ps_dec->ps_cur_slice;
     WORD32 ret;
 
-    ps_dec->u1_first_pb_nal_in_pic = 1;
     ps_dec->u2_mbx = 0xffff;
     ps_dec->u2_mby = 0;
     {
@@ -1425,7 +1424,10 @@ WORD32 ih264d_parse_decode_slice(UWORD8 u1_is_idr_slice,
     }
 
     if (ps_dec->u4_first_slice_in_pic == 0)
+    {
         ps_dec->ps_parse_cur_slice++;
+        ps_dec->u2_cur_slice_num++;
+    }
 
     ps_dec->u1_slice_header_done = 0;
 
@@ -1908,7 +1910,6 @@ WORD32 ih264d_parse_decode_slice(UWORD8 u1_is_idr_slice,
     if(ret != OK)
         return ret;
 
-    ps_dec->u2_cur_slice_num++;
     /* storing last Mb X and MbY of the slice */
     ps_dec->i2_prev_slice_mbx = ps_dec->u2_mbx;
     ps_dec->i2_prev_slice_mby = ps_dec->u2_mby;

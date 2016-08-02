@@ -1895,12 +1895,14 @@ WORD32 ih264d_video_decode(iv_obj_t *dec_hdl, void *pv_api_ip, void *pv_api_op)
     ps_dec->cur_dec_mb_num = 0;
     ps_dec->cur_recon_mb_num = 0;
     ps_dec->u4_first_slice_in_pic = 2;
+    ps_dec->u1_first_pb_nal_in_pic = 1;
     ps_dec->u1_slice_header_done = 0;
     ps_dec->u1_dangling_field = 0;
 
     ps_dec->u4_dec_thread_created = 0;
     ps_dec->u4_bs_deblk_thread_created = 0;
     ps_dec->u4_cur_bs_mb_num = 0;
+    ps_dec->u4_start_recon_deblk  = 0;
 
     DEBUG_THREADS_PRINTF(" Starting process call\n");
 
@@ -2065,8 +2067,10 @@ WORD32 ih264d_video_decode(iv_obj_t *dec_hdl, void *pv_api_ip, void *pv_api_op)
             if((ret == IVD_RES_CHANGED)
                             || (ret == IVD_MEM_ALLOC_FAILED)
                             || (ret == ERROR_UNAVAIL_PICBUF_T)
-                            || (ret == ERROR_UNAVAIL_MVBUF_T))
+                            || (ret == ERROR_UNAVAIL_MVBUF_T)
+                            || (ret == ERROR_INV_SPS_PPS_T))
             {
+                ps_dec->u4_slice_start_code_found = 0;
                 break;
             }
 
@@ -2148,7 +2152,8 @@ WORD32 ih264d_video_decode(iv_obj_t *dec_hdl, void *pv_api_ip, void *pv_api_op)
     if((ret == IVD_RES_CHANGED)
                     || (ret == IVD_MEM_ALLOC_FAILED)
                     || (ret == ERROR_UNAVAIL_PICBUF_T)
-                    || (ret == ERROR_UNAVAIL_MVBUF_T))
+                    || (ret == ERROR_UNAVAIL_MVBUF_T)
+                    || (ret == ERROR_INV_SPS_PPS_T))
     {
 
         /* signal the decode thread */
